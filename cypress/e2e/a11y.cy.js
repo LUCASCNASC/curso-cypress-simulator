@@ -1,31 +1,29 @@
 describe("Cypress Simulator - A11y Checks", () => {
   beforeEach(() => {
+    cy.login()
     cy.visit("./src/index.html?skipCaptcha=true", {
       onBeforeLoad(win) {
         win.localStorage.setItem("cookieConsent", "accepted")
       }
     })
-    cy.contains("button", "Login").click()
     cy.injectAxe()
   })
 
   it("sucessfully simulates a Cypress command (e.g., cy.log('Yay!'))", () => {
     
-    cy.get("textarea[placeholder='Write your Cypress code here...']")
-      .type("cy.log('Yay!')")
-    cy.contains("button", "Run").click()
+    cy.run("cy.log('Yay!')")
 
     cy.get('#outputArea', { timeout: 10000 })
       .should("contain", "Success:")
       .and("contain", "cy.log('Yay!') // Logged message 'Yay!'")
       .and("be.visible")
+
+      cy.checkA11y(".success")
   })
 
-  it("shows an error whrn entering and running an invalid Cypress command (e.g., cy.run())", () => {
-
-    cy.get("textarea[placeholder='Write your Cypress code here...']")
-      .type("cy.run()")
-    cy.contains("button", "Run").click()
+  it("shows an error when entering and running an invalid Cypress command (e.g., cy.run())", () => {
+    
+    cy.run("cy.run()")
 
     cy.get('#outputArea', { timeout: 10000 })
       .should("contain", "Error:")
@@ -36,22 +34,20 @@ describe("Cypress Simulator - A11y Checks", () => {
 
   it("it shows a warning when entering and running a not-implemented Cypress command (e.g., cy.contains('Login'))", () => {
 
-    cy.get("textarea[placeholder='Write your Cypress code here...']")
-      .type("cy.contains('Login')")
-    cy.contains("button", "Run").click()
+    cy.run("cy.contains('Login')")
 
     cy.get('#outputArea', { timeout: 10000 })
       .should("contain", "Warning:")
       .and("contain", "The `cy.contains` command has not been implemented yet.")
       .and("be.visible")
+
+    cy.checkA11y(".warning")
     
   })
 
   it("it shows an error when entering and running a valid Cypress command (e.g., cy.visit)", () => {
 
-    cy.get("textarea[placeholder='Write your Cypress code here...']")
-      .type("cy.visit")
-    cy.contains("button", "Run").click()
+    cy.run("cy.visit")
 
     cy.get('#outputArea', { timeout: 10000 })
       .should("contain", "Error:")
@@ -62,24 +58,62 @@ describe("Cypress Simulator - A11y Checks", () => {
 
   it("it maximizes and minimizes a simulation result.", () => {
 
-    cy.get("textarea[placeholder='Write your Cypress code here...']")
-      .type("cy.log('Yay!')")
-    cy.contains("button", "Run").click()
+    cy.run("cy.log('Yay!')")
 
     cy.get('.expand-collapse').click()
 
     cy.get('#outputArea', { timeout: 10000 })
-    .should("contain", "Success:")
-    .and("contain", "cy.log('Yay!') // Logged message 'Yay!'")
-    .and("be.visible")
+      .should("contain", "Success:")
+      .and("contain", "cy.log('Yay!') // Logged message 'Yay!'")
+      .and("be.visible")
 
     cy.get("#collapseIcon")
       .should("be.visible")
+
+    cy.checkA11y()
 
     cy.get('.expand-collapse').click()
 
     cy.get('.expand-collapse')
       .should("be.visible")
+
+    cy.checkA11y(".success")
     
   })
+})
+
+describe("Cypress Simulator - Captcha", () => {
+  beforeEach(() => {
+    cy.visit("./src/index.html")
+    cy.contains("button", "Login").click()
+    cy.injectAxe()
+  })
+
+  it("finds no a11y issues on all captcha view states (button enabled/disabled and error)", () => {
+   
+    cy.contains("button", "Verify").should("be.disabled")
+
+    cy.get("input[placeholder='Enter your answer']").type("1000")
+    
+    cy.contains("button", "Verify").should("be.enabled")
+
+    cy.checkA11y()
+
+    cy.contains("button", "Verify").click()
+
+    cy.contains(".error", "Incorrect answer, please try again")
+      .should("be.visible")
+
+    cy.get("input[placeholder='Enter your answer']")
+      .should("have.value", "")
+    cy.contains("button", "Verify").should("be.disabled")
+
+    cy.get("input[placeholder='Enter your answer']").clear()
+
+    cy.contains("button", "Verify").should("be.disabled")
+
+    cy.checkA11y()
+
+  })
+
 })
