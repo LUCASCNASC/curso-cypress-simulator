@@ -28,3 +28,4 @@ ___
 Este é um curso da [**Escola Talking About Testing**](https://talking-about-testing.vercel.app/).
 
 It is necessary to develop and specify the scenarios.
+testes
