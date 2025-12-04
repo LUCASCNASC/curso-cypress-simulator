@@ -93,3 +93,28 @@ describe('Cypress Simulator', () => {
   })
 
 })
+
+describe('Glitch in the Matrix', () => {
+
+  beforeEach(() => {
+
+    cy.login()
+    cy.visit("./src/index.html?skipCaptcha=true&chancesOfError=1", {
+      onBeforeLoad(win) {
+        win.localStorage.setItem("cookieConsent", "accepted")
+      } //passar o Captcha=true e aceitar os cookies("cookieConsent", "accepted")
+    })
+
+  })
+
+ it("erros out eith a glitch in the Matrix", () => {
+    
+    cy.run("cy.visit('http://example.com')")
+
+    cy.get('#outputArea', { timeout: 10000 })
+      .should("contain", "There's a glitch in the Matrix")
+      .and("be.visible")
+    
+  })
+
+})

@@ -8,7 +8,7 @@ module.exports = defineConfig({
   e2e: {
     fixturesFolder: false,
     retries: {
-      runMode: 2,
+      runMode: 2, 
       openMode: 0,
     },
     setupNodeEvents(on, config) {
